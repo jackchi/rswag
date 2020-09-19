@@ -116,6 +116,7 @@ module Rswag
         end
       end
 
+<<<<<<< Updated upstream
       def build_query_string_part(param, value)
         name = param[:name]
         return "#{name}=#{value}" unless param[:type].to_sym == :array
@@ -131,6 +132,46 @@ module Rswag
           value.map { |v| "#{name}=#{v}" }.join('&')
         else
           "#{name}=#{value.join(',')}" # csv is default
+=======
+      def param_is_array?(param)
+        param[:type]&.to_sym == :array || param.dig(:schema, :type)&.to_sym == :array
+      end
+
+      def build_query_string_part(param, value, swagger_doc)
+        name = param[:name]
+        if doc_version(swagger_doc).start_with?('2')
+          return "#{name}=#{value}" unless param[:type].to_sym == :array
+
+          case param[:collectionFormat]
+          when :ssv
+            "#{name}=#{value.join(' ')}"
+          when :tsv
+            "#{name}=#{value.join('\t')}"
+          when :pipes
+            "#{name}=#{value.join('|')}"
+          when :multi
+            value.map { |v| "#{name}=#{v}" }.join('&')
+          else
+            "#{name}=#{value.join(',')}" # csv is default
+          end
+        else
+          # Openapi3
+          return "#{name}=#{value}" unless param_is_array?(param)
+          # https://swagger.io/docs/specification/serialization/
+          param[:style] ||= :form
+          param[:explode] ||= :true
+
+          case param[:style]
+          when :form
+            "#{name}=#{value.join(',')}" # csv
+          when :spaceDelimited
+            "#{name}=#{value.join(' ')}"
+          when :pipeDelimited
+            "#{name}=#{value.join('|')}"
+          else
+            "#{name}=#{value.join(',')}" # csv is default
+          end
+>>>>>>> Stashed changes
         end
       end
 
