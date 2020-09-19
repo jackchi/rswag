@@ -111,28 +111,11 @@ module Rswag
 
           parameters.select { |p| p[:in] == :query }.each_with_index do |p, i|
             path_template.concat(i.zero? ? '?' : '&')
-            path_template.concat(build_query_string_part(p, example.send(p[:name])))
+            path_template.concat(build_query_string_part(p, example.send(p[:name]), swagger_doc))
           end
         end
       end
 
-<<<<<<< Updated upstream
-      def build_query_string_part(param, value)
-        name = param[:name]
-        return "#{name}=#{value}" unless param[:type].to_sym == :array
-
-        case param[:collectionFormat]
-        when :ssv
-          "#{name}=#{value.join(' ')}"
-        when :tsv
-          "#{name}=#{value.join('\t')}"
-        when :pipes
-          "#{name}=#{value.join('|')}"
-        when :multi
-          value.map { |v| "#{name}=#{v}" }.join('&')
-        else
-          "#{name}=#{value.join(',')}" # csv is default
-=======
       def param_is_array?(param)
         param[:type]&.to_sym == :array || param.dig(:schema, :type)&.to_sym == :array
       end
@@ -171,7 +154,6 @@ module Rswag
           else
             "#{name}=#{value.join(',')}" # csv is default
           end
->>>>>>> Stashed changes
         end
       end
 
